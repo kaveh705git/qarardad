@@ -77,9 +77,15 @@
     position: absolute; top: 0; left: 0;
     font-size: 13px; color: #555;
     min-width: 170px;
-    direction: rtl;
+    direction: ltr;
     text-align: left;
     font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+  }
+  #preview .date-box .label {
+    direction: rtl;
+    unicode-bidi: embed;
+    display: inline-block;
+    margin-left: 4px;
   }
   #preview .date-box .line {
     display: inline-block; border-bottom: 1px dotted #999;
@@ -101,7 +107,7 @@
   #preview .parties p { margin: 4px 0; font-size: 13px; }
   #preview .content { text-align: justify; margin-top: 10px; }
 
-  /* ============ لیست تبصره‌ها (اصلاح‌شده RTL) ============ */
+  /* ============ لیست تبصره‌ها (RTL اصلاح‌شده) ============ */
   #preview .notes-list {
     padding: 0; margin: 10px 0; list-style: none;
     direction: rtl;
@@ -248,22 +254,13 @@
     </label>
   </div>
 
-  <div class="row">
-    
-   <div class="field">
-      <label>سال</label>
-      <input id="year" placeholder="مثلاً: 1402" maxlength="4">
+  <div class="field">
+    <label>تاریخ</label>
+    <input id="date" placeholder="مثلاً: 1405/05/05" dir="ltr" style="text-align:right;">
+    <div class="hint">
+      اگر تیک دست‌نویس برداشته شود، این تاریخ عیناً در PDF درج می‌شود.
     </div>
   </div>
-    <div class="field">
-      <label>ماه</label>
-      <input id="month" placeholder="مثلاً: 12" maxlength="2">
-    </div>
- <div class="field">
-      <label>روز</label>
-      <input id="day" placeholder="مثلاً: 11" maxlength="2">
- </div>
-    
 
   <div class="field" style="margin-top:15px;">
     <label>توضیحات و شرایط اختصاصی</label>
@@ -360,9 +357,7 @@ function val(id) {
   return v ? v.replace(/</g,'&lt;') : '<span class="empty"></span>';
 }
 
-/* =========================================================
-   ساخت آیتم‌های لیست با شماره‌گذاری دستی راست‌چین
-   ========================================================= */
+/* ساخت آیتم‌های لیست با شماره‌گذاری دستی راست‌چین */
 function listItems(arr) {
   return arr.map((item, i) =>
     `<li><span class="num">${i + 1}.</span><span class="text">${item}</span></li>`
@@ -402,26 +397,30 @@ async function generatePDF() {
 
     /* --- مدیریت تاریخ --- */
     const handwrite = document.getElementById('handwriteDate').checked;
-    const day   = document.getElementById('day').value.trim();
-    const month = document.getElementById('month').value.trim();
-    const year  = document.getElementById('year').value.trim();
+    const dateValue = document.getElementById('date').value.trim();
 
     let dateHtml;
     if (handwrite) {
+      // حالت دست‌نویس: جای خالی برای نوشتن
       dateHtml = `
         <div class="date-box">
-          تاریخ:
+          <span class="label">تاریخ:</span>
           <span class="line"></span> /
           <span class="line"></span> /
           <span class="line"></span>
         </div>`;
+    } else if (dateValue) {
+      // تاریخ وارد‌شده توسط کاربر — عیناً درج می‌شود
+      dateHtml = `<div class="date-box"><span class="label">تاریخ:</span> <span dir="ltr" style="unicode-bidi:embed;display:inline-block;">${dateValue}</span></div>`;
     } else {
-      // هر عدد جدا در span با dir=ltr تا داخل خودش جابه‌جا نشود
-      const d = day   ? `<span dir="ltr" style="unicode-bidi:embed;display:inline-block;">${day}</span>`   : '<span class="line"></span>';
-      const m = month ? `<span dir="ltr" style="unicode-bidi:embed;display:inline-block;">${month}</span>` : '<span class="line"></span>';
-      const y = year  ? `<span dir="ltr" style="unicode-bidi:embed;display:inline-block;">${year}</span>`  : '<span class="line"></span>';
-      // ترتیب چاپی راست‌به‌چپ: سال / ماه / روز
-      dateHtml = `<div class="date-box">تاریخ: ${y} / ${m} / ${d}</div>`;
+      // تیک دست‌نویس برداشته شده ولی تاریخ خالی است → خط دست‌نویس
+      dateHtml = `
+        <div class="date-box">
+          <span class="label">تاریخ:</span>
+          <span class="line"></span> /
+          <span class="line"></span> /
+          <span class="line"></span>
+        </div>`;
     }
 
     const preview = document.getElementById('preview');
