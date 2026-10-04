@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>سامانه تنظیم قرارداد</title>
 
-<!-- فونت وزیرمتن از CDN -->
+<!-- فونت وزیرمتن -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
 
@@ -59,7 +59,7 @@
   button:hover { background: #5568d3; transform: translateY(-1px); }
   button:disabled { background: #aab; cursor: wait; }
 
-  /* بخش پیش‌نمایش PDF */
+  /* ============ پیش‌نمایش PDF ============ */
   #preview {
     background: #fff; padding: 45px; color: #222;
     font-size: 14px; line-height: 2; direction: rtl;
@@ -72,12 +72,13 @@
   #preview .header h2 { margin: 0; color: #333; font-size: 22px; }
   #preview .header .sub { color: #667eea; font-size: 13px; margin-top: 8px; }
 
-  /* ناحیه تاریخ دست‌نویس - گوشه بالا چپ */
+  /* ناحیه تاریخ - گوشه بالا چپ */
   #preview .date-box {
     position: absolute; top: 0; left: 0;
-    font-size: 13px; color: #555; text-align: left;
+    font-size: 13px; color: #555;
     min-width: 170px;
     direction: rtl;
+    text-align: left;
     font-family: 'Vazirmatn', 'Tahoma', sans-serif;
   }
   #preview .date-box .line {
@@ -99,8 +100,35 @@
   #preview .parties h4 { margin: 0 0 8px; color: #667eea; font-size: 14px; }
   #preview .parties p { margin: 4px 0; font-size: 13px; }
   #preview .content { text-align: justify; margin-top: 10px; }
-  #preview ol, #preview ul { padding-right: 20px; text-align: justify; }
-  #preview ol li, #preview ul li { margin-bottom: 6px; font-size: 13.5px; }
+
+  /* ============ لیست تبصره‌ها (اصلاح‌شده RTL) ============ */
+  #preview .notes-list {
+    padding: 0; margin: 10px 0; list-style: none;
+    direction: rtl;
+  }
+  #preview .notes-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13.5px;
+    text-align: justify;
+    direction: rtl;
+  }
+  #preview .notes-list li .num {
+    flex-shrink: 0;
+    min-width: 24px;
+    text-align: right;
+    font-weight: bold;
+    color: #667eea;
+    direction: ltr;
+    unicode-bidi: embed;
+  }
+  #preview .notes-list li .text {
+    flex: 1;
+    text-align: justify;
+  }
+
   #preview .info-table {
     width: 100%; border-collapse: collapse; margin-top: 10px;
   }
@@ -223,15 +251,15 @@
   <div class="row">
     <div class="field">
       <label>روز</label>
-      <input id="day" placeholder="مثلاً: 15" maxlength="2">
+      <input id="day" placeholder="مثلاً: 11" maxlength="2">
     </div>
     <div class="field">
       <label>ماه</label>
-      <input id="month" placeholder="مثلاً: فروردین">
+      <input id="month" placeholder="مثلاً: 12" maxlength="2">
     </div>
     <div class="field">
       <label>سال</label>
-      <input id="year" placeholder="مثلاً: 1404" maxlength="4">
+      <input id="year" placeholder="مثلاً: 1402" maxlength="4">
     </div>
   </div>
 
@@ -248,7 +276,7 @@
   <div>⏳ در حال آماده‌سازی PDF...</div>
 </div>
 
-<!-- بخش پیش‌نمایش برای PDF (مخفی) -->
+<!-- بخش پیش‌نمایش PDF (مخفی) -->
 <div id="preview" style="display:none;"></div>
 
 <script>
@@ -324,11 +352,24 @@ const templates = {
   }
 };
 
+/* گرفتن مقدار یا نمایش خط دست‌نویس */
 function val(id) {
   const v = document.getElementById(id).value.trim();
   return v ? v.replace(/</g,'&lt;') : '<span class="empty"></span>';
 }
 
+/* =========================================================
+   ساخت آیتم‌های لیست با شماره‌گذاری دستی راست‌چین
+   ========================================================= */
+function listItems(arr) {
+  return arr.map((item, i) =>
+    `<li><span class="num">${i + 1}.</span><span class="text">${item}</span></li>`
+  ).join('');
+}
+
+/* =========================================================
+   تولید PDF
+   ========================================================= */
 async function generatePDF() {
   const typeKey = document.getElementById('contractType').value;
   if (!typeKey) {
@@ -363,7 +404,6 @@ async function generatePDF() {
     const month = document.getElementById('month').value.trim();
     const year  = document.getElementById('year').value.trim();
 
-    /* ساخت HTML تاریخ - نکته: «تاریخ:» به‌درستی قبل از مقادیر می‌آید */
     let dateHtml;
     if (handwrite) {
       dateHtml = `
@@ -374,13 +414,13 @@ async function generatePDF() {
           <span class="line"></span>
         </div>`;
     } else {
-      const d = day   ? day   : '<span class="line"></span>';
-      const m = month ? month : '<span class="line"></span>';
-      const y = year  ? year  : '<span class="line"></span>';
-      dateHtml = `<div class="date-box">تاریخ: ${d} / ${m} / ${y}</div>`;
+      // هر عدد جدا در span با dir=ltr تا داخل خودش جابه‌جا نشود
+      const d = day   ? `<span dir="ltr" style="unicode-bidi:embed;display:inline-block;">${day}</span>`   : '<span class="line"></span>';
+      const m = month ? `<span dir="ltr" style="unicode-bidi:embed;display:inline-block;">${month}</span>` : '<span class="line"></span>';
+      const y = year  ? `<span dir="ltr" style="unicode-bidi:embed;display:inline-block;">${year}</span>`  : '<span class="line"></span>';
+      // ترتیب چاپی راست‌به‌چپ: سال / ماه / روز
+      dateHtml = `<div class="date-box">تاریخ: ${y} / ${m} / ${d}</div>`;
     }
-
-    const listItems = arr => arr.map(item => `<li>${item}</li>`).join('');
 
     const preview = document.getElementById('preview');
     preview.innerHTML = `
@@ -419,10 +459,10 @@ async function generatePDF() {
       </table>
 
       <h3>تعهدات طرفین</h3>
-      <ol>${listItems(tpl.obligations)}</ol>
+      <ul class="notes-list">${listItems(tpl.obligations)}</ul>
 
       <h3>شرایط فسخ و خاتمه</h3>
-      <ol>${listItems(tpl.termination)}</ol>
+      <ul class="notes-list">${listItems(tpl.termination)}</ul>
 
       ${customNotes ? `
         <h3>شرایط اختصاصی</h3>
@@ -430,7 +470,7 @@ async function generatePDF() {
       ` : ''}
 
       <h3>تبصره‌های عمومی</h3>
-      <ol>${listItems(tpl.generalNotes)}</ol>
+      <ul class="notes-list">${listItems(tpl.generalNotes)}</ul>
 
       <div class="signatures">
         <div>امضای طرف اول<br><br>${p1name}</div>
@@ -439,11 +479,10 @@ async function generatePDF() {
     `;
     preview.style.display = 'block';
 
-    /* ⭐ مهم: صبر کن تا فونت لود شود */
+    /* صبر تا لود کامل فونت */
     if (document.fonts && document.fonts.ready) {
       await document.fonts.ready;
     }
-    /* کمی تأخیر اضافه برای اطمینان */
     await new Promise(r => setTimeout(r, 300));
 
     const opt = {
