@@ -68,24 +68,28 @@
   #preview .header {
     text-align: center; border-bottom: 3px double #667eea;
     padding-bottom: 15px; margin-bottom: 25px; position: relative;
+    direction: rtl;
   }
   #preview .header h2 { margin: 0; color: #333; font-size: 22px; }
   #preview .header .sub { color: #667eea; font-size: 13px; margin-top: 8px; }
 
-  /* ناحیه تاریخ - گوشه بالا چپ */
+  /* ناحیه تاریخ - گوشه بالا راست */
   #preview .date-box {
-    position: absolute; top: 0; left: 0;
+    position: absolute; top: 0; right: 0;
     font-size: 13px; color: #555;
-    min-width: 170px;
-    direction: ltr;
-    text-align: left;
+    direction: rtl;
+    text-align: right;
     font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+    line-height: 1.8;
   }
   #preview .date-box .label {
-    direction: rtl;
-    unicode-bidi: embed;
     display: inline-block;
     margin-left: 4px;
+  }
+  #preview .date-box .val {
+    direction: ltr;
+    unicode-bidi: embed;
+    display: inline-block;
   }
   #preview .date-box .line {
     display: inline-block; border-bottom: 1px dotted #999;
@@ -97,17 +101,41 @@
     color: #667eea; font-size: 16px; margin: 22px 0 10px;
     border-right: 4px solid #667eea; padding-right: 10px;
     font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+    text-align: right;
   }
-  #preview .parties { display: flex; gap: 20px; margin: 15px 0; }
+  #preview .parties {
+    display: flex; gap: 20px; margin: 15px 0;
+    direction: rtl;
+  }
   #preview .parties > div {
     flex: 1; background: #f7f8ff; border-radius: 8px;
     padding: 12px 15px; border: 1px solid #e0e4ff;
+    direction: rtl;
   }
-  #preview .parties h4 { margin: 0 0 8px; color: #667eea; font-size: 14px; }
-  #preview .parties p { margin: 4px 0; font-size: 13px; }
-  #preview .content { text-align: justify; margin-top: 10px; }
+  #preview .parties h4 {
+    margin: 0 0 8px; color: #667eea; font-size: 14px;
+    text-align: center;
+  }
+  #preview .parties p {
+    margin: 4px 0; font-size: 13px;
+    direction: rtl;
+    text-align: right;
+  }
+  #preview .parties p b {
+    display: inline-block;
+    min-width: 50px;
+  }
+  #preview .parties p .val {
+    direction: ltr;
+    unicode-bidi: embed;
+    display: inline-block;
+  }
+  #preview .content {
+    text-align: justify; margin-top: 10px;
+    direction: rtl;
+  }
 
-  /* ============ لیست تبصره‌ها (RTL اصلاح‌شده) ============ */
+  /* ============ لیست تبصره‌ها ============ */
   #preview .notes-list {
     padding: 0; margin: 10px 0; list-style: none;
     direction: rtl;
@@ -118,28 +146,32 @@
     gap: 8px;
     margin-bottom: 8px;
     font-size: 13.5px;
-    text-align: justify;
     direction: rtl;
+    text-align: right;
   }
   #preview .notes-list li .num {
     flex-shrink: 0;
     min-width: 24px;
-    text-align: right;
     font-weight: bold;
     color: #667eea;
     direction: ltr;
     unicode-bidi: embed;
+    display: inline-block;
+    text-align: right;
   }
   #preview .notes-list li .text {
     flex: 1;
-    text-align: justify;
+    text-align: right;
   }
 
   #preview .info-table {
     width: 100%; border-collapse: collapse; margin-top: 10px;
+    direction: rtl;
   }
   #preview .info-table td {
     border: 1px solid #e0e4ff; padding: 8px 12px; font-size: 13px;
+    text-align: right;
+    direction: rtl;
   }
   #preview .info-table td:first-child {
     background: #f7f8ff; font-weight: bold; width: 35%; color: #555;
@@ -147,6 +179,7 @@
   .signatures {
     display: flex; justify-content: space-between;
     margin-top: 70px; padding-top: 15px;
+    direction: rtl;
   }
   .signatures > div {
     text-align: center; width: 45%;
@@ -192,13 +225,13 @@
     </div>
     <div class="field">
       <label>کد ملی طرف اول</label>
-      <input id="p1code" placeholder="0012345678">
+      <input id="p1code" dir="ltr" style="text-align:right;" placeholder="0012345678">
     </div>
   </div>
   <div class="row">
     <div class="field">
       <label>تلفن طرف اول</label>
-      <input id="p1phone" placeholder="0912xxxxxxx">
+      <input id="p1phone" dir="ltr" style="text-align:right;" placeholder="0912xxxxxxx">
     </div>
     <div class="field">
       <label>آدرس طرف اول</label>
@@ -213,13 +246,13 @@
     </div>
     <div class="field">
       <label>کد ملی طرف دوم</label>
-      <input id="p2code" placeholder="0087654321">
+      <input id="p2code" dir="ltr" style="text-align:right;" placeholder="0087654321">
     </div>
   </div>
   <div class="row">
     <div class="field">
       <label>تلفن طرف دوم</label>
-      <input id="p2phone" placeholder="0912xxxxxxx">
+      <input id="p2phone" dir="ltr" style="text-align:right;" placeholder="0912xxxxxxx">
     </div>
     <div class="field">
       <label>آدرس طرف دوم</label>
@@ -256,7 +289,7 @@
 
   <div class="field">
     <label>تاریخ</label>
-    <input id="date" placeholder="مثلاً: 1405/05/05" dir="ltr" style="text-align:right;">
+    <input id="date" dir="ltr" style="text-align:right;" placeholder="مثلاً: 1405/05/05">
     <div class="hint">
       اگر تیک دست‌نویس برداشته شود، این تاریخ عیناً در PDF درج می‌شود.
     </div>
@@ -357,6 +390,12 @@ function val(id) {
   return v ? v.replace(/</g,'&lt;') : '<span class="empty"></span>';
 }
 
+/* گرفتن مقدار عددی/لاتین (dir=ltr) یا خط دست‌نویس */
+function valLtr(id) {
+  const v = document.getElementById(id).value.trim();
+  return v ? `<span class="val">${v.replace(/</g,'&lt;')}</span>` : '<span class="empty"></span>';
+}
+
 /* ساخت آیتم‌های لیست با شماره‌گذاری دستی راست‌چین */
 function listItems(arr) {
   return arr.map((item, i) =>
@@ -382,12 +421,12 @@ async function generatePDF() {
   try {
     const tpl = templates[typeKey];
     const p1name    = val('p1name');
-    const p1code    = val('p1code');
-    const p1phone   = val('p1phone');
+    const p1code    = valLtr('p1code');
+    const p1phone   = valLtr('p1phone');
     const p1address = val('p1address');
     const p2name    = val('p2name');
-    const p2code    = val('p2code');
-    const p2phone   = val('p2phone');
+    const p2code    = valLtr('p2code');
+    const p2phone   = valLtr('p2phone');
     const p2address = val('p2address');
     const subject   = val('subject');
     const amount    = val('amount');
@@ -401,7 +440,6 @@ async function generatePDF() {
 
     let dateHtml;
     if (handwrite) {
-      // حالت دست‌نویس: جای خالی برای نوشتن
       dateHtml = `
         <div class="date-box">
           <span class="label">تاریخ:</span>
@@ -410,10 +448,8 @@ async function generatePDF() {
           <span class="line"></span>
         </div>`;
     } else if (dateValue) {
-      // تاریخ وارد‌شده توسط کاربر — عیناً درج می‌شود
-      dateHtml = `<div class="date-box"><span class="label">تاریخ:</span> <span dir="ltr" style="unicode-bidi:embed;display:inline-block;">${dateValue}</span></div>`;
+      dateHtml = `<div class="date-box"><span class="label">تاریخ:</span> <span class="val">${dateValue.replace(/</g,'&lt;')}</span></div>`;
     } else {
-      // تیک دست‌نویس برداشته شده ولی تاریخ خالی است → خط دست‌نویس
       dateHtml = `
         <div class="date-box">
           <span class="label">تاریخ:</span>
