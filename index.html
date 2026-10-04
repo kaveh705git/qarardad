@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>سامانه تنظیم قرارداد</title>
 
-<!-- فونت وزیرمتن -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
 
@@ -67,10 +66,7 @@
     font-family: 'Vazirmatn', 'Tahoma', sans-serif;
   }
 
-  /* ⭐ مهم‌ترین بخش: ایزوله کردن جهت متن در کل PDF */
-  #preview * {
-    unicode-bidi: isolate;
-  }
+  #preview * { unicode-bidi: isolate; }
 
   #preview .header {
     text-align: center;
@@ -83,7 +79,7 @@
   #preview .header h2 { margin: 0; color: #333; font-size: 22px; }
   #preview .header .sub { color: #667eea; font-size: 13px; margin-top: 8px; }
 
-  /* ناحیه تاریخ - گوشه بالا راست */
+  /* تاریخ - گوشه بالا راست */
   #preview .date-box {
     position: absolute; top: 0; right: 0;
     font-size: 13px; color: #555;
@@ -91,10 +87,12 @@
     text-align: right;
     line-height: 1.8;
     unicode-bidi: isolate;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
   #preview .date-box .label {
-    display: inline-block;
-    margin-left: 4px;
+    font-weight: normal;
     direction: rtl;
     unicode-bidi: isolate;
   }
@@ -122,6 +120,7 @@
     direction: rtl;
   }
 
+  /* ============ طرفین - با flex ============ */
   #preview .parties {
     display: flex;
     gap: 20px;
@@ -137,31 +136,40 @@
     direction: rtl;
   }
   #preview .parties h4 {
-    margin: 0 0 8px;
+    margin: 0 0 10px;
     color: #667eea;
     font-size: 14px;
     text-align: center;
   }
-  #preview .parties p {
-    margin: 4px 0;
+  /* ردیف‌های اطلاعات */
+  #preview .parties .row-item {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin: 6px 0;
     font-size: 13px;
     direction: rtl;
-    text-align: right;
+    align-items: flex-start;
   }
-  #preview .parties p .lbl {
-    display: inline-block;
+  #preview .parties .row-item .lbl {
+    flex-shrink: 0;
     font-weight: bold;
+    color: #333;
     min-width: 55px;
+    text-align: right;
     direction: rtl;
     unicode-bidi: isolate;
   }
-  #preview .parties p .val {
-    display: inline-block;
+  #preview .parties .row-item .val {
+    flex: 1;
+    text-align: right;
     direction: rtl;
     unicode-bidi: isolate;
+    word-break: break-word;
   }
-  #preview .parties p .val.ltr {
+  #preview .parties .row-item .val.ltr {
     direction: ltr;
+    text-align: right;
     unicode-bidi: isolate;
   }
 
@@ -171,7 +179,7 @@
     direction: rtl;
   }
 
-  /* ============ لیست تبصره‌ها ============ */
+  /* ============ تبصره‌ها ============ */
   #preview .notes-list {
     padding: 0;
     margin: 10px 0;
@@ -203,6 +211,7 @@
     direction: rtl;
   }
 
+  /* ============ جدول اطلاعات ============ */
   #preview .info-table {
     width: 100%;
     border-collapse: collapse;
@@ -211,22 +220,25 @@
   }
   #preview .info-table td {
     border: 1px solid #e0e4ff;
-    padding: 8px 12px;
+    padding: 10px 14px;
     font-size: 13px;
     text-align: right;
     direction: rtl;
+    vertical-align: top;
   }
   #preview .info-table td:first-child {
     background: #f7f8ff;
     font-weight: bold;
-    width: 35%;
-    color: #555;
-  }
-  #preview .info-table td:last-child {
-    direction: rtl;
+    width: 30%;
+    color: #333;
+    text-align: right;
   }
   #preview .info-table td:last-child .val {
     display: inline-block;
+    direction: rtl;
+    unicode-bidi: isolate;
+  }
+  #preview .info-table td:last-child .val.ltr {
     direction: ltr;
     unicode-bidi: isolate;
   }
@@ -253,7 +265,6 @@
     height: 14px;
   }
 
-  /* لودینگ */
   .loading-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,.5);
     display: none; align-items: center; justify-content: center;
@@ -365,18 +376,13 @@
   <button id="pdfBtn" onclick="generatePDF()">📥 دانلود PDF قرارداد</button>
 </div>
 
-<!-- لودینگ -->
 <div class="loading-overlay" id="loading">
   <div>⏳ در حال آماده‌سازی PDF...</div>
 </div>
 
-<!-- بخش پیش‌نمایش PDF (مخفی) -->
 <div id="preview" style="display:none;"></div>
 
 <script>
-/* =========================================================
-   قالب‌های ثابت هر نوع قرارداد
-   ========================================================= */
 const templates = {
   rent: {
     title: 'قرارداد اجاره',
@@ -446,33 +452,25 @@ const templates = {
   }
 };
 
-/* escape امن */
 function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-/* گرفتن مقدار فارسی (RTL) یا خط دست‌نویس */
-function valRtl(id) {
-  const v = document.getElementById(id).value.trim();
-  return v ? `<span class="val">${esc(v)}</span>` : '<span class="empty"></span>';
+/* ساخت ردیف اطلاعات طرفین */
+function infoRow(label, value, isLtr = false) {
+  const v = value && value.trim()
+    ? `<span class="val${isLtr ? ' ltr' : ''}">${esc(value.trim())}</span>`
+    : '<span class="empty"></span>';
+  return `<div class="row-item"><span class="lbl">${esc(label)}</span>${v}</div>`;
 }
 
-/* گرفتن مقدار لاتین (LTR) یا خط دست‌نویس */
-function valLtr(id) {
-  const v = document.getElementById(id).value.trim();
-  return v ? `<span class="val ltr">${esc(v)}</span>` : '<span class="empty"></span>';
-}
-
-/* ساخت آیتم‌های لیست با شماره‌گذاری دستی راست‌چین */
+/* ساخت آیتم‌های لیست تبصره‌ها */
 function listItems(arr) {
   return arr.map((item, i) =>
     `<li><span class="num">${i + 1}.</span><span class="text">${esc(item)}</span></li>`
   ).join('');
 }
 
-/* =========================================================
-   تولید PDF
-   ========================================================= */
 async function generatePDF() {
   const typeKey = document.getElementById('contractType').value;
   if (!typeKey) {
@@ -489,29 +487,28 @@ async function generatePDF() {
     const tpl = templates[typeKey];
 
     /* اطلاعات طرفین */
-    const p1name    = valRtl('p1name');
-    const p1code    = valLtr('p1code');
-    const p1phone   = valLtr('p1phone');
-    const p1address = valRtl('p1address');
-    const p2name    = valRtl('p2name');
-    const p2code    = valLtr('p2code');
-    const p2phone   = valLtr('p2phone');
-    const p2address = valRtl('p2address');
+    const p1name    = document.getElementById('p1name').value;
+    const p1code    = document.getElementById('p1code').value;
+    const p1phone   = document.getElementById('p1phone').value;
+    const p1address = document.getElementById('p1address').value;
+    const p2name    = document.getElementById('p2name').value;
+    const p2code    = document.getElementById('p2code').value;
+    const p2phone   = document.getElementById('p2phone').value;
+    const p2address = document.getElementById('p2address').value;
 
     /* اطلاعات قرارداد */
-    const subject   = valRtl('subject');
-    const amount    = valLtr('amount');
-    const duration  = valRtl('duration');
+    const subject  = document.getElementById('subject').value;
+    const amount   = document.getElementById('amount').value;
+    const duration = document.getElementById('duration').value;
 
     const customNotes = document.getElementById('customNotes').value.trim();
 
-    /* --- مدیریت تاریخ --- */
+    /* --- تاریخ --- */
     const handwrite = document.getElementById('handwriteDate').checked;
     const dateValue = document.getElementById('date').value.trim();
 
     let dateHtml;
     if (handwrite || !dateValue) {
-      /* حالت دست‌نویس */
       dateHtml = `
         <div class="date-box">
           <span class="label">تاریخ:</span>
@@ -520,9 +517,33 @@ async function generatePDF() {
           <span class="line"></span>
         </div>`;
     } else {
-      /* تاریخ وارد‌شده — LTR */
       dateHtml = `<div class="date-box"><span class="label">تاریخ:</span> <span class="val">${esc(dateValue)}</span></div>`;
     }
+
+    /* ساخت ستون طرفین با تابع infoRow */
+    const p1Column = `
+      <div>
+        <h4>طرف اول</h4>
+        ${infoRow('نام:', p1name)}
+        ${infoRow('کد ملی:', p1code, true)}
+        ${infoRow('تلفن:', p1phone, true)}
+        ${infoRow('آدرس:', p1address)}
+      </div>`;
+
+    const p2Column = `
+      <div>
+        <h4>طرف دوم</h4>
+        ${infoRow('نام:', p2name)}
+        ${infoRow('کد ملی:', p2code, true)}
+        ${infoRow('تلفن:', p2phone, true)}
+        ${infoRow('آدرس:', p2address)}
+      </div>`;
+
+    /* سلول جدول اطلاعات قرارداد */
+    const cellValue = (v, isLtr = false) => {
+      if (!v || !v.trim()) return '<span class="empty"></span>';
+      return `<span class="val${isLtr ? ' ltr' : ''}">${esc(v.trim())}</span>`;
+    };
 
     const preview = document.getElementById('preview');
     preview.innerHTML = `
@@ -537,27 +558,15 @@ async function generatePDF() {
 
       <h3>مشخصات طرفین</h3>
       <div class="parties">
-        <div>
-          <h4>طرف اول</h4>
-          <p><span class="lbl">نام:</span> ${p1name}</p>
-          <p><span class="lbl">کد ملی:</span> ${p1code}</p>
-          <p><span class="lbl">تلفن:</span> ${p1phone}</p>
-          <p><span class="lbl">آدرس:</span> ${p1address}</p>
-        </div>
-        <div>
-          <h4>طرف دوم</h4>
-          <p><span class="lbl">نام:</span> ${p2name}</p>
-          <p><span class="lbl">کد ملی:</span> ${p2code}</p>
-          <p><span class="lbl">تلفن:</span> ${p2phone}</p>
-          <p><span class="lbl">آدرس:</span> ${p2address}</p>
-        </div>
+        ${p1Column}
+        ${p2Column}
       </div>
 
       <h3>موضوع و مشخصات قرارداد</h3>
       <table class="info-table">
-        <tr><td>موضوع قرارداد</td><td>${subject}</td></tr>
-        <tr><td>مبلغ</td><td>${amount} <span class="val">تومان</span></td></tr>
-        <tr><td>مدت / زمان</td><td>${duration}</td></tr>
+        <tr><td>موضوع قرارداد</td><td>${cellValue(subject)}</td></tr>
+        <tr><td>مبلغ</td><td>${cellValue(amount, true)} تومان</td></tr>
+        <tr><td>مدت / زمان</td><td>${cellValue(duration)}</td></tr>
       </table>
 
       <h3>تعهدات طرفین</h3>
@@ -575,13 +584,12 @@ async function generatePDF() {
       <ul class="notes-list">${listItems(tpl.generalNotes)}</ul>
 
       <div class="signatures">
-        <div>امضای طرف اول<br><br>${p1name}</div>
-        <div>امضای طرف دوم<br><br>${p2name}</div>
+        <div>امضای طرف اول<br><br>${esc(p1name) || '<span class="empty"></span>'}</div>
+        <div>امضای طرف دوم<br><br>${esc(p2name) || '<span class="empty"></span>'}</div>
       </div>
     `;
     preview.style.display = 'block';
 
-    /* صبر تا لود کامل فونت */
     if (document.fonts && document.fonts.ready) {
       await document.fonts.ready;
     }
@@ -614,4 +622,4 @@ async function generatePDF() {
 </script>
 
 </body>
-  </html>
+</html>
